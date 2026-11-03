@@ -5,26 +5,30 @@ on:
   push:
     branches:
       - main
-
-env:
-  CARGO_TERM_COLOR: always
+      - master
 
 jobs:
-  test-action:
-    name: Check semver compatibility
+  build:
+    name: Build and test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          distribution: temurin
+          java-version: '21'
+          cache: maven
 
-      - name: Check semver
-        uses: obi1kenobi/cargo-semver-checks-action@v2
-        with:
-          version-tag-prefix: ''
+      - name: Build
+        run: mvn -B -q -DskipTests package
+
+      - name: Test
+        run: mvn -B test
+
+      - name: Smoke-test the command
+        run: |
+          out=$(echo '{"op":"from_read","html":"<p>Hello <b>world</b></p>","width":20}' | bin/html2text)
+          test "$out" = '{"text":"Hello **world**\n"}'

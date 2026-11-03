@@ -1,0 +1,4 @@
+#!/bin/sh
+# The html2text command: runs the jar that `mvn package` builds (target/html2text.jar).
+dir=$(dirname "$(readlink -f "$0")")
+exec java -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xshare:auto -jar "$dir/../target/html2text.jar" "$@"
